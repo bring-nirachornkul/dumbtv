@@ -66,7 +66,7 @@ public final class Home extends Activity {
     private ImageView wall;
     private View shade;
     private View tint;
-    private TextView clock, date;
+    private TextView clock, date, temp;
     private Meter meter;
     private Row apps, inputs;
     private Map<String, Long> recent = new HashMap<>();
@@ -489,7 +489,16 @@ public final class Home extends Activity {
         clock = Ui.text(this, 52, Ui.TEXT, Ui.LIGHT);
         date = Ui.text(this, 15, Ui.MUTED, Ui.MEDIUM);
         date.setPadding(dp(2), dp(8), 0, 0);
-        when.addView(clock);
+        // The temperature sits on the clock's line, in the same face, one step dimmer.
+        LinearLayout line = new LinearLayout(this);
+        line.setBaselineAligned(true);
+        line.addView(clock);
+        temp = Ui.text(this, 52, Ui.MUTED, Ui.LIGHT);
+        temp.setVisibility(View.GONE);
+        LinearLayout.LayoutParams beside = new LinearLayout.LayoutParams(WRAP, WRAP);
+        beside.leftMargin = dp(36);
+        line.addView(temp, beside);
+        when.addView(line);
         when.addView(date);
         meter = new Meter(this);
         meter.setVisibility(View.GONE);
@@ -772,8 +781,30 @@ public final class Home extends Activity {
         if (meter.getVisibility() == View.VISIBLE) {
             meter.update((android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE));
         }
+        showWeather();
+        String unit = cfg.get(Config.WEATHER);
+        if (!"off".equals(unit)) Weather.refresh(ui, this::showWeather, cfg.get(Config.WEATHER_CITY, ""), unit);
         // hourly and time-of-day rotations change while the screen stays open; a no-op otherwise
         background();
+    }
+
+    /**
+     * Options › Weather: "54°F  Charlotte" beside the clock, the unit and city as small as the
+     * clock's AM/PM. Hidden while Weather is off, with no city, or without a recent reading.
+     */
+    private void showWeather() {
+        String unit = cfg.get(Config.WEATHER);
+        String city = cfg.get(Config.WEATHER_CITY, "").trim();
+        Integer d = "off".equals(unit) || city.isEmpty() ? null : Weather.degrees(city, unit);
+        if (d == null) {
+            temp.setVisibility(View.GONE);
+            return;
+        }
+        SpannableString small = new SpannableString(unit.toUpperCase(Locale.ROOT) + "  " + city);
+        small.setSpan(new RelativeSizeSpan(0.36f), 0, small.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        temp.setText(d + "°");
+        temp.append(small);
+        temp.setVisibility(View.VISIBLE);
     }
 
     private void background() {

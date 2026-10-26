@@ -78,6 +78,15 @@ final class Config {
     static final Choice MEMORY = new Choice("memory", "Memory meter", "off",
             new String[] {"off", "on"},
             new String[] {"Hidden", "Shown"});
+    /**
+     * The temperature beside the clock, for the city in {@link #WEATHER_CITY}. Hidden by default:
+     * it is the launcher's only use of the network, and nothing is fetched while it is hidden.
+     */
+    static final Choice WEATHER = new Choice("weather", "Weather", "off",
+            new String[] {"off", "f", "c"},
+            new String[] {"Hidden", "°F", "°C"});
+    /** Free text, set from Options › Weather city. */
+    static final String WEATHER_CITY = "weather.city";
     static final Choice INPUTS = new Choice("inputs", "Inputs row", "on",
             new String[] {"on", "off"},
             new String[] {"Shown", "Hidden"});
@@ -103,7 +112,7 @@ final class Config {
             new String[] {"off", "on"},
             new String[] {"Off", "On"});
 
-    static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, ORDER, LABELS, CLOCK, MEMORY, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE, LOCK};
+    static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, ORDER, LABELS, CLOCK, MEMORY, WEATHER, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE, LOCK};
 
     /** Folder of wallpapers, next to home.conf, that Background › Image file rotates through. */
     static final String WALLPAPERS = "wallpapers";

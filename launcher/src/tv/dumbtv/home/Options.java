@@ -13,6 +13,8 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -48,7 +50,10 @@ public final class Options extends Activity {
         title.setPadding(dp(16), 0, 0, dp(20));
         list.addView(title);
 
-        for (Config.Choice c : Config.CHOICES) list.addView(choice(c));
+        for (Config.Choice c : Config.CHOICES) {
+            list.addView(choice(c));
+            if (c == Config.WEATHER) list.addView(city());
+        }
         list.addView(action("Next wallpaper", () -> {
             cfg.nextWallpaper();
             refresh();
@@ -72,7 +77,8 @@ public final class Options extends Activity {
                 + "\nOn Fire OS 8 adb cannot reach that folder; use /sdcard/Android/media/"
                 + getPackageName() + "/ instead"
                 + "\nAdaptive wallpaper tint shows graphite until you add a wallpaper"
-                + "\nNo internet permission. No tracking, no ads, no accounts.");
+                + "\nThe internet is used only by Weather, and only while it is shown."
+                + " No tracking, no ads, no accounts.");
         list.addView(about);
 
         setContentView(scroll);
@@ -126,6 +132,43 @@ public final class Options extends Activity {
         row.setOnFocusChangeListener((v, has) -> show.run());
         refreshers.add(show);
         refreshers.add(() -> style(row));
+        return row;
+    }
+
+    /** Options › Weather city: the city's name, typed on the TV's keyboard. */
+    private View city() {
+        LinearLayout row = row();
+        TextView value = Ui.text(this, 16, Ui.MUTED, Ui.MEDIUM);
+        value.setGravity(Gravity.END);
+        row.addView(label("Weather city"), new LinearLayout.LayoutParams(0, WRAP, 1f));
+        row.addView(value, new LinearLayout.LayoutParams(WRAP, WRAP));
+        row.setOnClickListener(v -> {
+            EditText field = new EditText(this);
+            field.setSingleLine();
+            field.setHint("Charlotte");
+            field.setText(cfg.get(Config.WEATHER_CITY, ""));
+            field.setSelectAllOnFocus(true);
+            FrameLayout box = new FrameLayout(this);
+            box.setPadding(dp(24), dp(8), dp(24), 0);
+            box.addView(field);
+            new AlertDialog.Builder(this, Ui.DIALOG)
+                    .setTitle("Weather city")
+                    .setView(box)
+                    .setPositiveButton("Save", (d, w) -> {
+                        cfg.set(Config.WEATHER_CITY, field.getText().toString().trim());
+                        refresh();
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
+        refreshers.add(() -> {
+            String city = cfg.get(Config.WEATHER_CITY, "");
+            value.setText(city.isEmpty() ? "Not set" : city);
+            value.setTextColor(row.isFocused() ? Ui.TEXT : Ui.MUTED);
+            row.setAlpha("off".equals(cfg.get(Config.WEATHER)) ? 0.4f : 1f);
+            style(row);
+        });
+        row.setOnFocusChangeListener((v, has) -> refresh());
         return row;
     }
 

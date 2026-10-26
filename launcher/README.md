@@ -8,8 +8,9 @@ A home screen for Fire TV that does one job: show your apps and your HDMI inputs
 
 - **54 KB.** Plain Java and Android views. No AndroidX, Kotlin, Compose, Play
   Services or any other library.
-- **No network.** There is no `INTERNET` permission, so Android will not let it
-  open a connection.
+- **Network for Weather only.** This branch declares `INTERNET` for Options › Weather,
+  which is hidden by default. Nothing else opens a connection, and Weather makes no
+  request while it is hidden or while Home is off screen.
 - **No permissions on Fire OS 7 and 8.** It declares three (usage access, task
   order, boot completed), each limited to Android 8.1 and earlier, for the Fire OS 6
   Keeper below. Check: `aapt2 dump permissions dumbtv-home.apk`.
@@ -59,6 +60,8 @@ Undo: `./launcher/install.sh --undo` gives HOME back to Amazon's launcher.
 | App names | on focus, always, never |
 | Clock | system, 24-hour, 12-hour |
 | Memory meter | hidden, shown: free memory under the date, with a bar of what is in use; amber, with "running low", when Android reports low memory or under 15% is free. It only shows the numbers: it closes and frees nothing, and needs no permission |
+| Weather | hidden, °F, °C: the temperature beside the clock, as `54°F  Charlotte`, for the city in Weather city. Open-Meteo (no key, no account) turns the city into coordinates once, then answers one request at most every 30 minutes, only while Home is on screen. A reading over three hours old is hidden |
+| Weather city | the city's name, typed with the TV's keyboard. Nothing is fetched while it is empty |
 | Inputs row | shown, hidden |
 | Open inputs with | Automatic, the TV's app, dumbtv home (see below) |
 | Background | black, graphite, midnight, image, adaptive, adaptive tint |
